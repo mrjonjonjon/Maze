@@ -145,6 +145,8 @@ void generateMaze(Cell *cells[][WIDTH / CELL_SIZE], int startX, int startY)
 int main()
 {
 
+    const sf::Time MOVE_COOLDOWN = sf::milliseconds(100); // Adjust as needed
+    sf::Clock moveClock;
     // Get the screen resolution
     sf::VideoMode screenResolution = sf::VideoMode::getDesktopMode();
 
@@ -173,51 +175,56 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+        }
 
-            if (event.type == sf::Event::KeyPressed)
+        float dx = 0, dy = 0;
+        sf::Time timeSinceLastMove = moveClock.getElapsedTime();
+
+        if (timeSinceLastMove >= MOVE_COOLDOWN)
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
             {
-                float dx = 0, dy = 0;
-                switch (event.key.code)
-                {
-                case sf::Keyboard::W:
-                    dy = -CELL_SIZE;
-                    break;
-                case sf::Keyboard::S:
-                    dy = CELL_SIZE;
-                    break;
-                case sf::Keyboard::A:
-                    dx = -CELL_SIZE;
-                    break;
-                case sf::Keyboard::D:
-                    dx = CELL_SIZE;
-                    break;
-                default:
-                    break;
-                }
-                // Collision detection
-                // Assuming you're moving vertically
-
-                int cellY = (player.position.y + dy) / CELL_SIZE;
-                int cellX = (player.position.x + dx) / CELL_SIZE;
-                if (cellY < 0 || cellY >= HEIGHT / CELL_SIZE)
-                    continue;
-                if (cellX < 0 || cellX >= WIDTH / CELL_SIZE)
-                    continue;
-
-                if (dy == -CELL_SIZE && cells[cellY][cellX]->bottom)
-                    continue;
-                if (dy == CELL_SIZE && cells[cellY][cellX]->top)
-                    continue;
-                if (dx == -CELL_SIZE && cells[cellY][cellX]->right)
-                    continue;
-                if (dx == CELL_SIZE && cells[cellY][cellX]->left)
-                    continue;
-
-                // Assuming you're moving horizontally
-
-                player.move(dx, dy);
+                dy = -CELL_SIZE;
+                moveClock.restart();
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+            {
+                dx = -CELL_SIZE;
+                moveClock.restart();
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+            {
+                dy = CELL_SIZE;
+                moveClock.restart();
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            {
+                dx = CELL_SIZE;
+                moveClock.restart();
             }
         }
+
+        // The rest of your movement and boundary checking logic...
+
+        int cellY = (player.position.y + dy) / CELL_SIZE;
+        int cellX = (player.position.x + dx) / CELL_SIZE;
+        if (cellY < 0 || cellY >= HEIGHT / CELL_SIZE)
+            continue;
+        if (cellX < 0 || cellX >= WIDTH / CELL_SIZE)
+            continue;
+
+        if (dy == -CELL_SIZE && cells[cellY][cellX]->bottom)
+            continue;
+        if (dy == CELL_SIZE && cells[cellY][cellX]->top)
+            continue;
+        if (dx == -CELL_SIZE && cells[cellY][cellX]->right)
+            continue;
+        if (dx == CELL_SIZE && cells[cellY][cellX]->left)
+            continue;
+
+        // Assuming you're moving horizontally
+
+        player.move(dx, dy);
 
         window.clear(sf::Color::Black); // Sets background color to black
 
